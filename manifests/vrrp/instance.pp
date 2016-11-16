@@ -195,7 +195,7 @@ define keepalived::vrrp::instance (
   if $unicast_peers != undef {
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_header":
       target  => "${::keepalived::config_dir}/keepalived.conf",
-      content => '  unicast_peer {\n',
+      content => "  unicast_peer {\n",
       order   => '100-${_name}-010',
     }
     Keepalived::Vrrp::Unicast_peer {
@@ -213,14 +213,14 @@ define keepalived::vrrp::instance (
     }
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
       target  => "${::keepalived::config_dir}/keepalived.conf",
-      content => '  }\n',
+      content => "  }\n",
       order   => '100-${_name}-012',
     }
   }
   
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_footer":
     target  => "${::keepalived::config_dir}/keepalived.conf",
-    content => '}\n',
+    content => "}\n",
     order   => '100-${_name}-zzz',
   }
   

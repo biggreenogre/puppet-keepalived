@@ -174,6 +174,7 @@ define keepalived::vrrp::instance (
   $dont_track_primary         = false,
   $use_vmac                   = false,
   $vmac_xmit_base             = true,
+  $collect_exported           = true,
 
 ) {
   $_name = regsubst($name, '[:\/\n]', '')
@@ -185,10 +186,43 @@ define keepalived::vrrp::instance (
     fail('virtual_router_id must be an integer >= 1 and <= 255')
   }
 
-  concat::fragment { "keepalived.conf_vrrp_instance_${_name}":
+  concat::fragment { "keepalived.conf_vrrp_instance_${_name}_main":
     target  => "${::keepalived::config_dir}/keepalived.conf",
     content => template('keepalived/vrrp_instance.erb'),
-    order   => '100',
+    order   => '100-${_name}-000',
   }
+  
+  if $unicast_peers != undef {
+    concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_header":
+      target  => "${::keepalived::config_dir}/keepalived.conf",
+      content => '  unicast_peer {\n',
+      order   => '100-${_name}-010',
+    }
+    Keepalived::Vrrp::Unicast_peer {
+      instance => "${name}",
+    }
+    if collect_exported {
+      # Export our own unicast peers
+      @@keepalived::vrrp::unicast_peer{ $unicast_peers: }
+      # Collect exported 
+      Keepalived::Vrrp::Unicast_peer <<| instance == $name |>>
+    }
+    else {
+      # Create our own unicast peers
+      keepalived::vrrp::unicast_peer{ $unicast_peers: }
+    }
+    concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
+      target  => "${::keepalived::config_dir}/keepalived.conf",
+      content => '  }\n',
+      order   => '100-${_name}-012',
+    }
+  }
+  
+  concat::fragment { "keepalived.conf_vrrp_instance_${_name}_footer":
+    target  => "${::keepalived::config_dir}/keepalived.conf",
+    content => '}\n',
+    order   => '100-${_name}-zzz',
+  }
+  
 }
 

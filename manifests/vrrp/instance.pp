@@ -220,7 +220,7 @@ define keepalived::vrrp::instance (
   
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_footer":
     target  => "${::keepalived::config_dir}/keepalived.conf",
-    content => "}\n",
+    content => "}\n\n",
     order   => '100-${_name}-zzz',
   }
   

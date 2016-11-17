@@ -189,14 +189,14 @@ define keepalived::vrrp::instance (
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_main":
     target  => "${::keepalived::config_dir}/keepalived.conf",
     content => template('keepalived/vrrp_instance.erb'),
-    order   => '100-${_name}-000',
+    order   => "100-${_name}-000",
   }
   
   if $unicast_peers != undef {
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_header":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  unicast_peer {\n#100-${_name}-010#\n",
-      order   => '100-${_name}-010',
+      order   => "100-${_name}-010",
     }
     Keepalived::Vrrp::Unicast_peer {
       instance => "${name}",
@@ -217,14 +217,14 @@ define keepalived::vrrp::instance (
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  }\n#100-${_name}-090#\n",
-      order   => '100-${_name}-090',
+      order   => "100-${_name}-090",
     }
   }
   
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_footer":
     target  => "${::keepalived::config_dir}/keepalived.conf",
-    content => "}\n#110-${_name}-zzz#\n",
-    order   => '100-${_name}-zzz',
+    content => "}\n#100-${_name}-zzz#\n",
+    order   => "100-${_name}-zzz",
   }
   
 }

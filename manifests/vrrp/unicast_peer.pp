@@ -10,7 +10,7 @@ define keepalived::vrrp::unicast_peer (
 ) {
   $_inst = regsubst($instance, '[:\/\n]', '')
   
-  notify { "unicast_peer_${hostname}": message => "\nInstance=${instance}\n"}
+  notify { "unicast_peer_${hostname}_${name}": message => "\nInstance=${instance}\n"}
   
   validate_string( $name )
   validate_ip_address( $name )

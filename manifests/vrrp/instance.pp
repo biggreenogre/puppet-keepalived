@@ -203,7 +203,7 @@ define keepalived::vrrp::instance (
     }
     notify { "instance_${name}": }
     if collect_exported {
-    notify { "collect_exported_${name}": message => "\nInstance_peers=${unicast_peers}:\n" }
+    #notify { "collect_exported_${name}": message => "\nInstance_peers=${unicast_peers}:\n" }
       # Export our own unicast peers
       keepalived::vrrp::unicast_peer{ $unicast_peers: }
       # Collect exported 
@@ -216,7 +216,7 @@ define keepalived::vrrp::instance (
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  }\n\n",
-      order   => '100-${_name}-099',
+      order   => '100-${_name}-ZZZ',
     }
   }
   

@@ -19,7 +19,7 @@ define keepalived::vrrp::unicast_peer (
     concat::fragment { "keepalived.conf_vrrp_instance_${_inst}_upeers_peer_${name}":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "    ${name}\n",
-      order   => "100-${_inst}-020",
+      order   => "000-${_inst}-YYY",
     }
   }
 }

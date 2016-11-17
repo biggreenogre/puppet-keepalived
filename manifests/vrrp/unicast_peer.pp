@@ -9,7 +9,7 @@ define keepalived::vrrp::unicast_peer (
   $instance,
 ) {
   $_inst = regsubst($instance, '[:\/\n]', '')
-  $_name = regsubst($instance, '[:\/\n\.]', '_')
+  $_name = regsubst($name, '[:\/\n\.]', '_')
   
   # notify { "unicast_peer_${hostname}_${name}": message => "\nname=${name}:\norder=100-${_inst}:\n"}
   

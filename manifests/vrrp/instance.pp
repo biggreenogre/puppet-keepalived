@@ -203,7 +203,7 @@ define keepalived::vrrp::instance (
     }
     notify { "instance_${name}": }
     if collect_exported {
-    notify { "collect_exported${name}": }
+    notify { "collect_exported_${name}": message => "\nunicast_peers=${unicast_peers}:\n" }
       # Export our own unicast peers
       @@keepalived::vrrp::unicast_peer{ $unicast_peers: }
       # Collect exported 

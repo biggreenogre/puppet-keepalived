@@ -198,9 +198,6 @@ define keepalived::vrrp::instance (
       content => "  unicast_peer {\n",
       order   => "100-${_name}-010",
     }
-    Keepalived::Vrrp::Unicast_peer {
-      instance => "${name}",
-    }
     
     if collect_exported {
     #notify { "collect_exported_${name}": message => "\nInstance_peers=${unicast_peers}:\n" }
@@ -211,7 +208,7 @@ define keepalived::vrrp::instance (
     }
     else {
       # Create our own unicast peers
-      keepalived::vrrp::unicast_peer{ $unicast_peers: }
+      keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
     }
     
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":

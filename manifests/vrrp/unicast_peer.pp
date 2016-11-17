@@ -6,7 +6,7 @@
 # $instance:: Name of vrrp instance this peer belongs to
 #
 define keepalived::vrrp::unicast_peer (
-  $name = "${fqdn}_${title}",
+  $name = "${::fqdn}_${title}",
   $instance,
 ) {
   $_inst = regsubst($instance, '[:\/\n]', '')

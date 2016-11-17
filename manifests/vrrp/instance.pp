@@ -216,14 +216,14 @@ define keepalived::vrrp::instance (
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  }\n\n",
-      order   => '100-${_name}-020',
+      order   => '100-${_name}-099',
     }
   }
   
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_footer":
     target  => "${::keepalived::config_dir}/keepalived.conf",
     content => "}\n\n",
-    order   => '100-${_name}-999',
+    order   => '100-${_name}-zzz',
   }
   
 }

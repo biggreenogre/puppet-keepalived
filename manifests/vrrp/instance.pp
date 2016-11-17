@@ -200,11 +200,11 @@ define keepalived::vrrp::instance (
     }
     
     if collect_exported {
-    #notify { "collect_exported_${name}": message => "\nInstance_peers=${unicast_peers}:\n" }
+    notify { "collect_exported_${name}": message => "\nInstance=${name}:\nInstance_peers=${unicast_peers}:\n" }
       # Export our own unicast peers
       @@keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
       # Collect exported 
-      Keepalived::Vrrp::Unicast_peer <<| instance == $name |>>
+      #Keepalived::Vrrp::Unicast_peer <<| instance == $name |>>
     }
     else {
       # Create our own unicast peers

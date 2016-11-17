@@ -201,7 +201,9 @@ define keepalived::vrrp::instance (
     Keepalived::Vrrp::Unicast_peer {
       instance => "${name}",
     }
+    notify { "instance_${name}": }
     if collect_exported {
+    notify { "collect_exported${name}": }
       # Export our own unicast peers
       @@keepalived::vrrp::unicast_peer{ $unicast_peers: }
       # Collect exported 

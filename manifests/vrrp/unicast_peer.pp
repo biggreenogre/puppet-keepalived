@@ -13,6 +13,7 @@ define keepalived::vrrp::unicast_peer (
   
   validate_string( $name )
   validate_ip_address( $name )
+  notify { "unicast_peer_${name}": message => "\nInstance=${instance}:\npeer=${name}:\n" }
   
   if ! has_ip_address( $name ) {
     concat::fragment { "keepalived.conf_vrrp_instance_${_inst}_upeers_peer_${_name}":

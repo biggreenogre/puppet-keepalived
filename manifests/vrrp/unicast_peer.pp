@@ -19,7 +19,7 @@ define keepalived::vrrp::unicast_peer (
   if ! has_ip_address( $name ) {
     concat::fragment { "keepalived.conf_vrrp_instance_${_inst}_upeers_peer_${_name}":
       target  => "${::keepalived::config_dir}/keepalived.conf",
-      content => "    ${name}\n#100-${_name}-050#\n",
+      content => "    ${name}\n#100-${_inst}-050#\n",
       order   => "100-${_inst}-050",
     }
   }

@@ -8,7 +8,7 @@
 define keepalived::vrrp::unicast_peer (
   $instance,
 ) {
-  assert_private( "unicast_peers can only be created by keepalived module resources." )
+  assert_private()
   
   $_inst = regsubst($instance, '[:\/\n]', '')
   
@@ -18,7 +18,7 @@ define keepalived::vrrp::unicast_peer (
     concat::fragment { "keepalived.conf_vrrp_instance_${_inst}_upeers_peer_${name}":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "    ${title}\n",
-      order   => "100-${_inst}-020",
+      order   => "100-${_inst}-010",
     }
   }
 }

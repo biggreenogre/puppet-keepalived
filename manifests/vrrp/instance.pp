@@ -119,7 +119,6 @@
 # $unicast_source_ip::     default IP for binding vrrpd is the primary IP
 #                          on interface. If you want to hide the location of vrrpd,
 #                          use this IP as src_addr for unicast vrrp packets.
-#                          Required if $collect_exported_peers = true.
 #                          Default: undef.
 #
 # $unicast_peers::         Do not send VRRP adverts over VRRP multicast group.
@@ -129,9 +128,10 @@
 #                          May be specified as an array with ip addresses
 #                          Default: undef.
 #
-# $collect_exported_peers  If true, this instance's $unicast_source_ip will be
-#                          exported as a unicast peer and peers exported by
-#                          other hosts will be created
+# $collect_unicast_peers   Enable automatic VRRP unicast configuration with
+#                          exported resources and disable VRRP multicast.
+#                          Optionally, override default peer settings with
+#                          $unicast_source_ip and $unicast_peers params.
 #                          Default: false
 #
 # $dont_track_primary      Tells keepalived to ignore VRRP interface faults.
@@ -177,7 +177,7 @@ define keepalived::vrrp::instance (
   $multicast_source_ip        = undef,
   $unicast_source_ip          = undef,
   $unicast_peers              = undef,
-  $collect_exported_peers     = false,
+  $collect_unicast_peers     = false,
   $dont_track_primary         = false,
   $use_vmac                   = false,
   $vmac_xmit_base             = true,
@@ -192,13 +192,13 @@ define keepalived::vrrp::instance (
     fail('virtual_router_id must be an integer >= 1 and <= 255')
   }
   
-  if $unicast_source_ip != undef or $collect_exported_peers {
+  if $unicast_source_ip != undef {
     validate_ip_address( $unicast_source_ip )
   }
   if $unicast_peers != undef {
     validate_ip_address( $unicast_peers )
   }
-  validate_bool( $collect_exported_peers )
+  validate_bool( $collect_unicast_peers )
   
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_main":
     target  => "${::keepalived::config_dir}/keepalived.conf",
@@ -206,41 +206,39 @@ define keepalived::vrrp::instance (
     order   => "100-${_name}-000",
   }
   
-  if $collect_exported_peers {
-    if $unicast_peers != undef {
-      $_unicast_peers = concat( any2array( $unicast_peers ), $unicast_source_ip )
-    }  
-    else {
-      $_unicast_peers = $unicast_source_ip
-    }
-  }
-  else {
-    $_unicast_peers = $unicast_peers
-  }
-  
-  if $_unicast_peers != undef {
+  if $unicast_peers != undef or $collect_unicast_peers {
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_header":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  unicast_peer {\n",
-      order   => "100-${_name}-010",
+      order   => "100-${_name}-000",
     }
     
-    if $collect_exported_peers {
-      #notify { "collect_exported_${name}": message => "\nInstance=${name}:\nInstance_peers=${_unicast_peers}:\n" }
-      # Export our own unicast peers
+    if $collect_unicast_peers {
+       if $unicast_source_ip != undef {
+         $unicast_src = $unicast_source_ip
+       }
+       else {
+         $unicast_src = inline_template("<%= scope.lookupvar('::ipaddress_${interface}') -%>")
+       }
+      
+      if $unicast_peers != undef {
+        $_unicast_peers = concat( any2array( $unicast_peers ), $unicast_src )
+      }  
+      else {
+        $_unicast_peers = $unicast_src
+      }
+      
       @@keepalived::vrrp::unicast_peer{ $_unicast_peers: instance => "${name}" }
-      # Collect all exported unicast peers for this instance
       Keepalived::Vrrp::Unicast_peer <<| instance == $name |>>
     }
     else {
-      # Create our own unicast peers
-      keepalived::vrrp::unicast_peer{ $_unicast_peers: instance => "${name}" }
+      keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
     }
-    
+  
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  }\n\n",
-      order   => "100-${_name}-030",
+      order   => "100-${_name}-020",
     }
   }
   

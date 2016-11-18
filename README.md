@@ -214,7 +214,28 @@ class { '::keepalived':
 
 By default Keepalived will use multicast packets to determine failover conditions.
 However, in many cloud environments it is not possible to use multicast because of
-network restrictions. Keepalived can be configured to use unicast in such environments:
+network restrictions.
+Keepalived can be configured to use unicast in such environments:
+
+Enable automatic unicast configuration with exported resources by setting
+parameter 'collect\_unicast\_peers => true'
+
+**Automatic unicast configuration:
+
+```puppet
+  keepalived::vrrp::instance { 'VI_50':
+    interface         => 'eth1',
+    state             => 'BACKUP',
+    virtual_router_id => '50',
+    priority          => '100',
+    auth_type         => 'PASS',
+    auth_pass         => 'secret',
+    virtual_ipaddress => '10.0.0.1/29',
+    track_script      => 'check_nginx',
+    collect_unicast_peers => true,
+  }
+```
+**Manual unicast configuration or override auto defaults:
 
 ```puppet
   keepalived::vrrp::instance { 'VI_50':
@@ -232,8 +253,8 @@ network restrictions. Keepalived can be configured to use unicast in such enviro
 ```
 The 'unicast\_source\_ip' parameter is optional as Keepalived will bind to the specified interface by default.
 The 'unicast\_peers' parameter contains an array of ip addresses that correspond to the failover nodes.
-
-
+(Note that both 'unicast\_source\_ip' and 'unicast\_peers' parameters will be exported if 'collect\_unicast\_peers => true'.)
+ 
 ### Creating ip-based virtual server instances with two real servers
 
 This sets up a virtual server www.example.com that directs traffic to

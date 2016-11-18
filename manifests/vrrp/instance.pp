@@ -119,6 +119,7 @@
 # $unicast_source_ip::     default IP for binding vrrpd is the primary IP
 #                          on interface. If you want to hide the location of vrrpd,
 #                          use this IP as src_addr for unicast vrrp packets.
+#                          Required if $collect_exported_peers = true.
 #                          Default: undef.
 #
 # $unicast_peers::         Do not send VRRP adverts over VRRP multicast group.
@@ -127,6 +128,11 @@
 #
 #                          May be specified as an array with ip addresses
 #                          Default: undef.
+#
+# $collect_exported_peers  If true, this instance's $unicast_source_ip will be
+#                          exported as a unicast peer and peers exported by
+#                          other hosts will be created
+#                          Default: false
 #
 # $dont_track_primary      Tells keepalived to ignore VRRP interface faults.
 #                          Can be useful on setup where two routers are
@@ -171,10 +177,10 @@ define keepalived::vrrp::instance (
   $multicast_source_ip        = undef,
   $unicast_source_ip          = undef,
   $unicast_peers              = undef,
+  $collect_exported_peers     = false,
   $dont_track_primary         = false,
   $use_vmac                   = false,
   $vmac_xmit_base             = true,
-  $collect_exported           = true,
 
 ) {
   $_name = regsubst($name, '[:\/\n]', '')
@@ -185,36 +191,50 @@ define keepalived::vrrp::instance (
   if (!is_integer($virtual_router_id) or ($virtual_router_id + 0) < 1 or ($virtual_router_id + 0) > 255) {
     fail('virtual_router_id must be an integer >= 1 and <= 255')
   }
-
+  
+  if $unicast_source_ip != undef or $collect_exported_peers {
+    validate_ip_address( $unicast_source_ip )
+  }
+  if $unicast_peers != undef {
+    validate_ip_address( $unicast_peers )
+  }
+  validate_bool( $collect_exported_peers )
+  
   concat::fragment { "keepalived.conf_vrrp_instance_${_name}_main":
     target  => "${::keepalived::config_dir}/keepalived.conf",
     content => template('keepalived/vrrp_instance.erb'),
     order   => "100-${_name}-000",
   }
   
-  if $unicast_peers != undef {
-    if ! is_string( $unicast_peers ) {
-      validate_array( $unicast_peers )
+  if $collect_exported_peers {
+    if $unicast_peers != undef {
+      $_unicast_peers = concat( any2array( $unicast_peers ), $unicast_source_ip )
+    }  
+    else {
+      $_unicast_peers = $unicast_source_ip
     }
+  }
+  else {
+    $_unicast_peers = $unicast_peers
+  }
+  
+  if $_unicast_peers != undef {
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_header":
       target  => "${::keepalived::config_dir}/keepalived.conf",
       content => "  unicast_peer {\n",
       order   => "100-${_name}-010",
     }
     
-    if collect_exported {
-      notify { "collect_exported_${name}": message => "\nInstance=${name}:\nInstance_peers=${unicast_peers}:\n" }
+    if $collect_exported_peers {
+      #notify { "collect_exported_${name}": message => "\nInstance=${name}:\nInstance_peers=${_unicast_peers}:\n" }
       # Export our own unicast peers
-      @@keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
+      @@keepalived::vrrp::unicast_peer{ $_unicast_peers: instance => "${name}" }
       # Collect all exported unicast peers for this instance
       Keepalived::Vrrp::Unicast_peer <<| instance == $name |>>
-      # if $::fqdn != 'gateway01.pulse-64-3-0.rlpulse.net' {
-      #  Keepalived::Vrrp::Unicast_peer <<| |>>
-      # }
     }
     else {
       # Create our own unicast peers
-      keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
+      keepalived::vrrp::unicast_peer{ $_unicast_peers: instance => "${name}" }
     }
     
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":

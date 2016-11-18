@@ -196,7 +196,9 @@ define keepalived::vrrp::instance (
     validate_ip_address( $unicast_source_ip )
   }
   if $unicast_peers != undef {
-    validate_ip_address( $unicast_peers )
+    if ! is_string( $unicast_peers ) {
+      validate_array( $unicast_peers )
+    }
   }
   validate_bool( $collect_unicast_peers )
   

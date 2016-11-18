@@ -235,7 +235,7 @@ parameter 'collect\_unicast\_peers => true'
     collect_unicast_peers => true,
   }
 ```
-**Manual unicast configuration or override auto defaults:
+**Manual unicast configuration or override auto default IP:
 
 ```puppet
   keepalived::vrrp::instance { 'VI_50':
@@ -251,9 +251,12 @@ parameter 'collect\_unicast\_peers => true'
     unicast_peers     => ['10.0.0.1', '10.0.0.2']
   }
 ```
-The 'unicast\_source\_ip' parameter is optional as Keepalived will bind to the specified interface by default.
-The 'unicast\_peers' parameter contains an array of ip addresses that correspond to the failover nodes.
-(Note that both 'unicast\_source\_ip' and 'unicast\_peers' parameters will be exported if 'collect\_unicast\_peers => true'.)
+The 'unicast\_source\_ip' parameter is optional as Keepalived will bind to the
+specified interface by default. This value will be exported in place of the default
+when 'collect\_unicast\_peers => true'.
+The 'unicast\_peers' parameter contains an array of ip addresses that correspond
+to the failover nodes.
+
  
 ### Creating ip-based virtual server instances with two real servers
 

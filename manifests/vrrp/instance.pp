@@ -192,7 +192,7 @@ define keepalived::vrrp::instance (
     fail('virtual_router_id must be an integer >= 1 and <= 255')
   }
   
-  if $unicast_source_ip != undef {
+  if $unicast_source_ip != undef and ! $collect_unicast_peers {
     validate_ip_address( $unicast_source_ip )
   }
   if $unicast_peers != undef {
@@ -228,7 +228,7 @@ define keepalived::vrrp::instance (
     }
     
     if $unicast_peers != undef {
-      ensure_resource( keepalived::vrrp::unicast_peer, $unicast_peers, { instance => "${name}" } )
+      keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
     }
     
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":

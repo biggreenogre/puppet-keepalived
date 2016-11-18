@@ -228,7 +228,7 @@ define keepalived::vrrp::instance (
     }
     
     if $unicast_peers != undef {
-      keepalived::vrrp::unicast_peer{ $unicast_peers: instance => "${name}" }
+      ensure_resource( keepalived::vrrp::unicast_peer, $unicast_peers, { instance => "${name}" } )
     }
     
     concat::fragment { "keepalived.conf_vrrp_instance_${_name}_upeers_footer":

@@ -8,7 +8,7 @@
 define keepalived::vrrp::unicast_peer (
   $instance,
 ) {
-  assert_private()
+  assert_private( "unicast_peers can only be created by keepalived module resources." )
   
   $_inst = regsubst($instance, '[:\/\n]', '')
   

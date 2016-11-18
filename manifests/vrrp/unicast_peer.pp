@@ -8,6 +8,8 @@
 define keepalived::vrrp::unicast_peer (
   $instance,
 ) {
+  assert_private()
+  
   $_inst = regsubst($instance, '[:\/\n]', '')
   
   validate_ip_address( $name )

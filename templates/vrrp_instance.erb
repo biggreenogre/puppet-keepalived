@@ -149,6 +149,7 @@ vrrp_instance <%= @_name %> {
 
   <%- if @multicast_source_ip -%>
   mcast_src_ip <%= @multicast_source_ip %>
+  
   <%- end -%>
   <%- if @unicast_source_ip -%>
   unicast_src_ip <%= @unicast_source_ip %>
